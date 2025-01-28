@@ -42,5 +42,36 @@ router.post('/', (req, res) => {
     return res.status(201).json(); // 201: Resource Created
 });
 
+/** PUT: /habits/{id} => update selected habit */
+router.put('/:id', (req, res) => {
+    if (!req.body.id || !req.body.name) {
+        return res.status(400).json({ err: 'Bad Request' });
+    }
+
+    // search for habit in the list 
+    const index = habits.findIndex(h => h.id == req.params.id);
+
+    if (index == -1) {
+        return res.status(404).json({ err: 'Not Found' });
+    }
+
+    habits[index].name = req.body.name;
+    return res.status(204).json(); // 204: No Content
+});
+
+/** DELETE: /habits/{id} => remove selected habit */
+router.delete('/:id', (req, res) => {
+    // search for habit in the list 
+    const index = habits.findIndex(h => h.id == req.params.id);
+
+    if (index == -1) {
+        return res.status(404).json({ err: 'Not Found' });
+    }
+
+    // remove
+    habits.splice(index, 1);
+    return res.status(204).json(); // 204: No Content
+});
+
 // make controller public
 export default router;
