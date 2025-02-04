@@ -6,38 +6,23 @@ import Habit from '../models/habit.js';
 // create express router object to handle http request / response calls
 const router = express.Router();
 
-// create in-memory data (replace w/db later)
-// let habits = [
-//     { id: 1, name: 'Drink Water' },
-//     { id: 2, name: 'Track Assignment' },
-//     { id: 3, name: 'Wash Hands' },
-//     { id: 4, name: 'Daily Workout' },
-//     { id: 5, name: 'Be Positive' },
-//     { id: 6, name: 'Eat Balanced Diet' },
-//     { id: 7, name: 'Wash the Dishes' },
-//     { id: 8, name: 'Do Duolingo Spanish Lesson' }
-// ];
-
 /** GET: /habits => show all habits */
 router.get('/', async (req, res) => {
     // use model to fetch all habit documents from mongodb
     let habits = await Habit.find();
 
     return res.status(200).json(habits);
-
-    //return res.status(200).json(habits);
 });
 
 /** GET: /habits/{id} => show selected habit based on id */
-router.get('/:id', (req, res) => {
-    // // search for id param value in list
-    // const habit = habits.find(h => h.id == req.params.id);
+router.get('/:id', async (req, res) => {
+    let habit = await Habit.findById(req.params.id);
 
-    // if (!habit) {
-    //     return res.status(404).json({ err: 'Not Found' });
-    // }
+    if (!habit) {
+        return res.status(404).json({ err: 'Not Found' });
+    }
 
-    // return res.status(200).json(habit);
+    return res.status(200).json(habit);
 });
 
 /** POST: /habits => read new habit json from request body & add to list */
@@ -52,34 +37,41 @@ router.post('/', async (req, res) => {
 });
 
 /** PUT: /habits/{id} => update selected habit */
-router.put('/:id', (req, res) => {
-    // if (!req.body.id || !req.body.name) {
-    //     return res.status(400).json({ err: 'Bad Request' });
-    // }
+router.put('/:id', async (req, res) => {
+    try {
+        let habit = await Habit.findById(req.params.id);
 
-    // // search for habit in the list 
-    // const index = habits.findIndex(h => h.id == req.params.id);
+        // _id not found
+        if (!habit) {
+            return res.status(404).json({ err: 'Not Found' });
+        }
 
-    // if (index == -1) {
-    //     return res.status(404).json({ err: 'Not Found' });
-    // }
+        // check _id values match
+        if (req.params.id != req.body._id) {
+            return res.status(400).json({ err: `Bad Request: ids do not match` });
+        }
 
-    // habits[index].name = req.body.name;
-    // return res.status(204).json(); // 204: No Content
+        // all good, try to update
+        await Habit.findByIdAndUpdate(req.params.id, req.body);
+        return res.status(204).json();
+    }
+    catch (err) {
+        return res.status(400).json({ err: `Bad Request: ${err}` });
+    }
 });
 
 /** DELETE: /habits/{id} => remove selected habit */
-router.delete('/:id', (req, res) => {
-    // // search for habit in the list 
-    // const index = habits.findIndex(h => h.id == req.params.id);
+router.delete('/:id', async (req, res) => {
+    // search for habit in the list 
+    let habit = await Habit.findById(req.params.id);
 
-    // if (index == -1) {
-    //     return res.status(404).json({ err: 'Not Found' });
-    // }
+    if (!habit) {
+        return res.status(404).json({ err: 'Not Found' });
+    }
 
-    // // remove
-    // habits.splice(index, 1);
-    // return res.status(204).json(); // 204: No Content
+    // remove
+    await Habit.findByIdAndDelete(req.params.id);
+    return res.status(204).json(); // 204: No Content
 });
 
 // make controller public
