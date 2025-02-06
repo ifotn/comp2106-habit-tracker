@@ -11,6 +11,12 @@ const router = express.Router();
  * /api/v1/habits:
  *   get:
  *     summary: Find all habits
+ *     parameters:
+ *       - name: category
+ *         in: query
+ *         schema:
+ *           type: string
+ *           required: false
  *     responses:
  *       200:
  *         description: Returns a single habit
