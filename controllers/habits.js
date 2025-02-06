@@ -6,12 +6,37 @@ import Habit from '../models/habit.js';
 // create express router object to handle http request / response calls
 const router = express.Router();
 
+/**
+ * @swagger
+ * /api/v1/habits:
+ *   get:
+ *     summary: Find all habits
+ *     responses:
+ *       200:
+ *         description: Returns a single habit
+ *       404:
+ *         description: Not found
+ */
+router.get('/', async (req, res) => {
+    let habits = [];
+    let { category } = req.query;
+
+    if (!category) {
+        // use model to fetch all habit documents from mongodb
+        habits = await Habit.find();
+    }
+    else {
+        habits = await Habit.find({ category: category });
+    }
+
+    return res.status(200).json(habits);
+});
 
 /**
  * @swagger
- * /api/v1/cheeses/{id}:
+ * /api/v1/habits/{id}:
  *   get:
- *     summary: Find cheese by its id
+ *     summary: Find habit by its id
  *     parameters:
  *       - name: id
  *         in: path
@@ -20,18 +45,10 @@ const router = express.Router();
  *           required: true
  *     responses:
  *       200:
- *         description: Returns a single cheese
+ *         description: Returns a single habit
  *       404:
  *         description: Not found
  */
-router.get('/', async (req, res) => {
-    // use model to fetch all habit documents from mongodb
-    let habits = await Habit.find();
-
-    return res.status(200).json(habits);
-});
-
-/** GET: /habits/{id} => show selected habit based on id */
 router.get('/:id', async (req, res) => {
     let habit = await Habit.findById(req.params.id);
 
@@ -90,6 +107,7 @@ router.delete('/:id', async (req, res) => {
     await Habit.findByIdAndDelete(req.params.id);
     return res.status(204).json(); // 204: No Content
 });
+
 
 // make controller public
 export default router;
