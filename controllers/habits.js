@@ -6,7 +6,24 @@ import Habit from '../models/habit.js';
 // create express router object to handle http request / response calls
 const router = express.Router();
 
-/** GET: /habits => show all habits */
+
+/**
+ * @swagger
+ * /api/v1/cheeses/{id}:
+ *   get:
+ *     summary: Find cheese by its id
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         schema:
+ *           type: integer
+ *           required: true
+ *     responses:
+ *       200:
+ *         description: Returns a single cheese
+ *       404:
+ *         description: Not found
+ */
 router.get('/', async (req, res) => {
     // use model to fetch all habit documents from mongodb
     let habits = await Habit.find();

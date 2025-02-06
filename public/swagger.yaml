@@ -1,0 +1,36 @@
+info:
+  title: Habit Tracker API
+  version: 1.0.0
+consumes:
+  - application/json
+produces:
+  - application/json
+openapi: '3.0.0'
+paths:
+  /api/v1/habits/:
+    get:
+      summary: List habits
+      responses:
+        200:
+          description: Retrieve all habits
+    post:
+      summary: Create a habit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string,
+                category:
+                  type: string,
+                description:
+                  type: string
+      responses:
+        201:
+          description: Resource created
+        400:
+          description: Bad request
+
