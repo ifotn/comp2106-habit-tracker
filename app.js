@@ -1,6 +1,9 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
+import path from 'path';
+import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 
 // controllers
 import habitsController from './controllers/habits.js';
@@ -15,6 +18,23 @@ app.use(bodyParser.json());
 mongoose.connect(process.env.DB, {})
 .then((res) => console.log('Connected to MongoDB'))
 .catch((err) => console.log(`Connection Failure: ${err}`));
+
+// swagger api doc config
+const options = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Habit Tracker API',
+            version: '1.0.0'
+        }
+    },
+    apis: ['./controllers/*.js']  // location of api methods to document
+};
+
+const __dirname = path.resolve();
+const __swaggerDistPath = path.join(__dirname, "node_modules", "swagger-ui-dist");
+const openapiSpecs = swaggerJSDoc(options);
+app.use('/api-docs', express.static(__swaggerDistPath, { index: false }), swaggerUi.serve, swaggerUi.setup(openapiSpecs));
 
 // map urls to controllers
 app.use('/api/v1/habits', habitsController);
