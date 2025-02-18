@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import path from 'path';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
+import cors from 'cors';
 
 // controllers
 import habitsController from './controllers/habits.js';
@@ -35,6 +36,12 @@ const __dirname = path.resolve();
 const __swaggerDistPath = path.join(__dirname, "node_modules", "swagger-ui-dist");
 const openapiSpecs = swaggerJSDoc(options);
 app.use('/api-docs', express.static(__swaggerDistPath, { index: false }), swaggerUi.serve, swaggerUi.setup(openapiSpecs));
+
+// cors config to allow angular client access to make API calls
+app.use(cors({
+    origin: process.env.CLIENT_URL,
+    methods: 'GET,POST,PUT,DELETE,HEAD,OPTIONS'
+}));
 
 // map urls to controllers
 app.use('/api/v1/habits', habitsController);
