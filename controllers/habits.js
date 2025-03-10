@@ -3,6 +3,8 @@ import express from 'express';
 // model ref
 import Habit from '../models/habit.js';
 
+import query from 'qs';
+
 // create express router object to handle http request / response calls
 const router = express.Router();
 
@@ -18,8 +20,16 @@ const router = express.Router();
  *         description: Returns all habits
  */
 router.get('/', async (req, res) => {
-    // use model to fetch all habit documents from mongodb
-    let habits = await Habit.find();
+    let habits = [];
+
+    if (req.query.keyword) {
+        let keyword = req.query.keyword;
+        habits = await Habit.find({ $text: { $search: keyword }});
+    }
+    else {
+        // use model to fetch all habit documents from mongodb
+        habits = await Habit.find();
+    }
 
     return res.status(200).json(habits);
 });

@@ -15,6 +15,9 @@ const habitSchema = mongoose.Schema({
     }
 });
 
+
+habitSchema.index({ name: 'text', category: 'text' });
+
 // this model inherits all the CRUD methods from Mongoose
 const Habit = mongoose.model('Habit', habitSchema);
 export default Habit;
