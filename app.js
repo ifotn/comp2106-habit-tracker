@@ -5,9 +5,14 @@ import path from 'path';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import cors from 'cors';
+import passport from 'passport';
+
+// model
+import User from './models/user.js';
 
 // controllers
 import habitsController from './controllers/habits.js';
+import usersController from './controllers/users.js';
 
 // create new express application object
 const app = express();
@@ -43,8 +48,17 @@ app.use(cors({
     methods: 'GET,POST,PUT,DELETE,HEAD,OPTIONS'
 }));
 
+// passport config
+app.use(passport.initialize());
+passport.use(User.createStrategy());
+
+// allow passport to read / write user data from / to json
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 // map urls to controllers
 app.use('/api/v1/habits', habitsController);
+app.use('/api/v1/users', usersController);
 
 // start express server
 app.listen(3000, () => { console.log('API running on port 3000') });
