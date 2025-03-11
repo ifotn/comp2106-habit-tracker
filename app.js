@@ -6,6 +6,8 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import cors from 'cors';
 import passport from 'passport';
+import cookieParser from 'cookie-parser';
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 
 // model
 import User from './models/user.js';
@@ -19,6 +21,7 @@ const app = express();
 
 // app config
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 // db connection
 mongoose.connect(process.env.DB, {})
@@ -55,6 +58,32 @@ passport.use(User.createStrategy());
 // allow passport to read / write user data from / to json
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+
+// JWT config
+const jwtOptions = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: process.env.PASSPORT_SECRET
+};
+
+const strategy = new JwtStrategy(jwtOptions, async (jwt_payload, done) => {
+    try {
+        const user = await User.findById(jwt_payload.id);
+        if (user) {
+            // if user exists in jwt contents, return the user & no error
+            return done(null, user);
+        }
+        else {
+            // user not found from jwt
+            return done(null, false);
+        }
+    }
+    catch (err) {
+        // error: return the error and an empty user
+        return done(err, false);
+    }
+});
+
+passport.use(strategy);
 
 // map urls to controllers
 app.use('/api/v1/habits', habitsController);
