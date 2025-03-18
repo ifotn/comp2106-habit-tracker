@@ -48,7 +48,8 @@ app.use('/api-docs', express.static(__swaggerDistPath, { index: false }), swagge
 // cors config to allow angular client access to make API calls
 app.use(cors({
     origin: process.env.CLIENT_URL,
-    methods: 'GET,POST,PUT,DELETE,HEAD,OPTIONS'
+    methods: 'GET,POST,PUT,DELETE,HEAD,OPTIONS',
+    credentials: true
 }));
 
 // passport config
