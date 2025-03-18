@@ -71,4 +71,21 @@ router.post('/login', async (req, res) => {
     }
 });
 
+router.get('/logout', (req, res) => {
+    try {
+        // set cookie holding JWT to expire in the past and remove the cookie content
+        res.cookie('authToken', '', {
+            httpOnly: true,
+            secure: true,
+            expires: new Date(0)
+        });
+
+        res.clearCookie('authToken');
+        return res.status(200).json({ msg: 'Log out successful' });
+    }
+    catch (err) {
+        return res.status(400).json(err);
+    }
+});
+
 export default router;
