@@ -4,6 +4,7 @@ import express from 'express';
 import Habit from '../models/habit.js';
 
 import query from 'qs';
+import jwt from 'jsonwebtoken';
 
 // create express router object to handle http request / response calls
 const router = express.Router();
@@ -93,8 +94,21 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
     try {
-        await Habit.create(req.body);
-        return res.status(201).json(); // 201: Resource Created
+        // auth check w/jwt
+        const token = req.cookies.authToken;
+        
+        if (token) {
+            // verify jwt
+            const decode = jwt.verify(token, process.env.PASSPORT_SECRET);
+
+            if (decode) {
+                // valid jwt, add new doc
+                await Habit.create(req.body);
+                return res.status(201).json(); // 201: Resource Created
+            }
+        }
+        // no token or invalid jwt in token
+        return res.status(401).json({ err: 'Unauthorized' });       
     }
     catch (err) {
         return res.status(400).json({ err: `Bad Request: ${err}` });
@@ -142,21 +156,32 @@ router.post('/', async (req, res) => {
  */
 router.put('/:id', async (req, res) => {
     try {
-        let habit = await Habit.findById(req.params.id);
+        // auth check w/jwt
+        const token = req.cookies.authToken;
+        
+        if (token) {
+            // verify jwt
+            const decode = jwt.verify(token, process.env.PASSPORT_SECRET);
 
-        // _id not found
-        if (!habit) {
-            return res.status(404).json({ err: 'Not Found' });
+            if (decode) {
+                let habit = await Habit.findById(req.params.id);
+
+                // _id not found
+                if (!habit) {
+                    return res.status(404).json({ err: 'Not Found' });
+                }
+
+                // check _id values match
+                if (req.params.id != req.body._id) {
+                    return res.status(400).json({ err: `Bad Request: ids do not match` });
+                }
+
+                // all good, try to update
+                await Habit.findByIdAndUpdate(req.params.id, req.body);
+                return res.status(204).json();
+            }
         }
-
-        // check _id values match
-        if (req.params.id != req.body._id) {
-            return res.status(400).json({ err: `Bad Request: ids do not match` });
-        }
-
-        // all good, try to update
-        await Habit.findByIdAndUpdate(req.params.id, req.body);
-        return res.status(204).json();
+        return res.status(401).json({ err: 'Unauthorized' });
     }
     catch (err) {
         return res.status(400).json({ err: `Bad Request: ${err}` });
@@ -183,16 +208,27 @@ router.put('/:id', async (req, res) => {
  *         description: Not found
  */
 router.delete('/:id', async (req, res) => {
-    // search for habit in the list 
-    let habit = await Habit.findById(req.params.id);
+    // auth check w/jwt
+    const token = req.cookies.authToken;
+        
+    if (token) {
+        // verify jwt
+        const decode = jwt.verify(token, process.env.PASSPORT_SECRET);
 
-    if (!habit) {
-        return res.status(404).json({ err: 'Not Found' });
+        if (decode) {
+            // search for habit in the list 
+            let habit = await Habit.findById(req.params.id);
+
+            if (!habit) {
+                return res.status(404).json({ err: 'Not Found' });
+            }
+
+            // remove
+            await Habit.findByIdAndDelete(req.params.id);
+            return res.status(204).json(); // 204: No Content
+        }
     }
-
-    // remove
-    await Habit.findByIdAndDelete(req.params.id);
-    return res.status(204).json(); // 204: No Content
+    return res.status(401).json({ err: 'Unauthorized' });
 });
 
 // make controller public

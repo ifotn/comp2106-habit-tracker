@@ -49,7 +49,8 @@ app.use('/api-docs', express.static(__swaggerDistPath, { index: false }), swagge
 app.use(cors({
     origin: process.env.CLIENT_URL,
     methods: 'GET,POST,PUT,DELETE,HEAD,OPTIONS',
-    credentials: true
+    credentials: true,
+    allowedHeaders: 'Content-Type,Authorization'
 }));
 
 // passport config
