@@ -91,5 +91,11 @@ passport.use(strategy);
 app.use('/api/v1/habits', habitsController);
 app.use('/api/v1/users', usersController);
 
+// set static path to load angular client in public folder
+app.use(express.static(`${__dirname}/public`));
+app.get('*', (req, res) => {
+    res.sendFile(`${__dirname}/public/index.html`);
+});
+
 // start express server
 app.listen(3000, () => { console.log('API running on port 3000') });
